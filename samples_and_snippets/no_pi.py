@@ -128,4 +128,4 @@ if __name__ == '__main__':
     # These classes are not designed to be used in the same module - they are both blocking. If you uncomment one, comment-out the other.
 
     CarParkDisplay()
-    # CarDetector()
+    #CarDetector()
