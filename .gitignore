@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 .vscode/
 .idea/
+
+#Debugging and practice files
+mqtt_publisher.py
+mqtt_subscribe.py
