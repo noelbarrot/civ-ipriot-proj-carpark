@@ -4,6 +4,8 @@ import time
 import tkinter as tk
 from typing import Iterable
 import paho.mqtt.client as paho
+import json
+from datetime import datetime
 
 
 class WindowedDisplay:
@@ -71,35 +73,40 @@ class CarPark_Display:
         updater.start()
         self.window.show()
 
+
     def check_updates(self):
         # TODO: This is where you should manage the MQTT subscription
-        while True:
-            PAHO_HOST = 'localhost'
-            PAHO_PORT = 1883
-            PAHO_KEEP_ALIVE = 300
+        # Initialise MQTT
+        PAHO_HOST = 'localhost'
+        PAHO_PORT = 1883
+        PAHO_KEEP_ALIVE = 300
 
-            PAHO_CLIENT_NAME = 'car_park_sensor'
-            PAHO_TOPIC = 'car_park/data'
+        PAHO_CLIENT_NAME = 'Moondalup_carpark_display'  # MUST BE UNIQUE
+        PAHO_TOPIC = 'Moondalup_carpark/data'  # Main topic car_park, subtopic data
 
-            client = paho.Client(PAHO_CLIENT_NAME)
-            client.connect(PAHO_HOST, PAHO_PORT, PAHO_KEEP_ALIVE)
+        client = paho.Client(PAHO_CLIENT_NAME)
+        client.connect(PAHO_HOST, PAHO_PORT, PAHO_KEEP_ALIVE)
 
-            client.subscribe(PAHO_TOPIC)
+        client.subscribe(PAHO_TOPIC)
+        def on_message_callback(client, userdata, message):
+            message_data = str(message.payload.decode("UTF-8"))  # Decode the message payload into UTF-8 characters
+            data = json.loads(message_data)
+            output = f"At {data['Available bays']} it was {data['Temperature']} at location {data['At']}"
 
-            def on_message_callback(client, userdata, message):
-                pass
-            # NOTE: Dictionary keys *must* be the same as the class fields
-            # field_values = dict(zip(CarPark_Display.fields, [
-            #     f'{random.randint(0, 150):03d}',
-            #     f'{random.randint(0, 45):02d}℃',
-            #     time.strftime("%H:%M:%S")]))
-            # # Pretending to wait on updates from MQTT
-            # time.sleep(random.randint(1, 10))
-            # # When you get an update, refresh the display.
-            # self.window.update(field_values)
+            client.on_message = on_message_callback
 
+            #print(f'{PAHO_CLIENT_NAME} is listening on port {PAHO_PORT} for messages within the topic {PAHO_TOPIC}')
 
+            client.loop_forever()
 
-
+            #NOTE: Dictionary keys *must* be the same as the class fields
+            field_values = dict(zip(CarPark_Display.fields, [
+                f'{data["Available bays"]}',
+                f'{data["Temperature"]}℃',
+                f'{data["at"]}']))
+            # Pretending to wait on updates from MQTT
+            #time.sleep(random.randint(1, 10))
+            # When you get an update, refresh the display.
+            self.window.update(field_values)
 
 CarPark_Display()
